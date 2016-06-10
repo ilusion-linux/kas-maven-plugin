@@ -20,15 +20,37 @@ public class KasMojo extends AbstractMojo {
      * Directorio de resultados de sonar. Este generalmente se encuentra dentro
      * de la carpeta target.
      */
-    @Parameter(property = "targetSonar", defaultValue = "target/sonar/")
+    @Parameter(property = "sonar.target", defaultValue = "target/sonar/")
     protected String targetSonar;
 
     /**
      * Fichero con el resultado del analisis realizado de forma local por el
      * plugin sonar-maven-plugin.
      */
-    @Parameter(property = "resultadoSonar", defaultValue = "resultado_sonarqb.json")
+    @Parameter(property = "sonar.report.export.path")
     protected String resultadoSonar;
+
+    /**
+     * Variable para saber si se desea para el ciclo de compilacion en caso de
+     * encontrar problemas.
+     */
+    @Parameter(property = "sonar.compile.break")
+    protected boolean paraCompilacion;
+
+    /**
+     * Variable para saber si se desea para el ciclo de compilacion en caso de
+     * encontrar problemas.
+     */
+    @Parameter(property = "sonar.local.verbose")
+    protected boolean mostratDetalle;
+
+    /**
+     * Variable util en projectos donde se tiene una cantidad inicial de errores
+     * pero ne se desea afectar el build hasta corregirlos, pero no se desea que
+     * el numero de errores cresca.
+     */
+    @Parameter(property = "sonar.error.initial", defaultValue = "0")
+    protected int erroresIniciales;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(Util.INICIO);
@@ -42,8 +64,14 @@ public class KasMojo extends AbstractMojo {
             throw new MojoExecutionException(error.getMessage());
         } catch (MojoFailureException error) {
             getLog().info(error.getMessage());
-            getLog().info(verificador.obtenerErrores());
-            throw error;
+
+            if (mostratDetalle) {
+                getLog().info(verificador.obtenerErrores());
+            }
+
+            if (paraCompilacion && verificador.getProblemas() > erroresIniciales) {
+                throw error;
+            }
         }
 
         getLog().info(Util.FIN);
