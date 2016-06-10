@@ -17,14 +17,17 @@ public class Verificador {
     private final String rutaFichero;
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private int problemas;
+
     public Verificador(String rutaFichero) throws UtilExcepcion {
+        problemas = 0;
         this.rutaFichero = rutaFichero;
         this.fichero = new File(rutaFichero);
         leerResultado();
     }
 
     public void verificarErrores() throws MojoFailureException {
-        int problemas = resultado.get(PROBLEMAS).size();
+        problemas = resultado.get(PROBLEMAS).size();
 
         if (problemas > 0) {
             mensaje = new StringBuffer(Util.ERRORES_ECONTRADOS)
@@ -62,6 +65,10 @@ public class Verificador {
         }
 
         return mensaje.toString();
+    }
+
+    public int getProblemas() {
+        return problemas;
     }
 
     private void leerResultado() throws UtilExcepcion {
